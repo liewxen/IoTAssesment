@@ -1,0 +1,331 @@
+@model IoTAssesment.ViewModels.DeviceViewModel
+@{
+    ViewData["Title"] = $"Delete Device - {Model.Name}";
+}
+
+<!-- Header Section -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-trash text-red-500 mr-3"></i>
+            Delete Device
+        </h1>
+        <p class="text-gray-600 mt-2">Permanently remove device and all associated data</p>
+    </div>
+    <div class="flex flex-wrap gap-3">
+        <a href="/Devices/Details/@Model.Id"
+           class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200">
+            <i class="fas fa-eye mr-2"></i>
+            View Details
+        </a>
+        <a href="/Devices"
+           class="inline-flex items-center px-4 py-2 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium rounded-lg transition-all duration-200 bg-white hover:bg-gray-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to List
+        </a>
+    </div>
+</div>
+
+<!-- Warning Alert -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+            <div>
+                <h5 class="alert-heading">Warning: Permanent Deletion</h5>
+                <p class="mb-0">
+                    You are about to permanently delete this device and all associated data.
+                    This action <strong>cannot be undone</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Device Information Card -->
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-microchip"></i> Device to be Deleted
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Device Status -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="alert @(Model.IsOnline ? "alert-success" : "alert-warning") mb-3">
+                            <strong>Current Status:</strong>
+                            <span class="badge @(Model.IsOnline ? "bg-success" : "bg-warning")">
+                                <i class="fas @(Model.IsOnline ? "fa-wifi" : "fa-exclamation-triangle")"></i>
+                                @Model.Status
+                            </span>
+                            <span class="ms-2">Last seen: @Model.LastSeen.ToString("yyyy-MM-dd HH:mm:ss") UTC</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Details -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>@Model.Name</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Type:</strong></td>
+                                <td><span class="badge bg-primary">@Model.DeviceType</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Location:</strong></td>
+                                <td><i class="fas fa-map-marker-alt text-muted"></i> @Model.Location</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Description:</strong></td>
+                                <td>@(Model.Description ?? "No description")</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Serial Number:</strong></td>
+                                <td><code>@(Model.SerialNumber ?? "N/A")</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Firmware:</strong></td>
+                                <td><span class="badge bg-info">@(Model.FirmwareVersion ?? "Unknown")</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Updated:</strong></td>
+                                <td>@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sensor Data -->
+                @if (Model.BatteryLevel.HasValue || Model.Temperature.HasValue || Model.Humidity.HasValue)
+                {
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <h6 class="text-muted mb-2"><i class="fas fa-thermometer-half"></i> Current Sensor Data</h6>
+                            <div class="row">
+                                @if (Model.BatteryLevel.HasValue)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="text-center p-2 border rounded">
+                                            <i class="fas fa-battery-half fa-2x text-muted"></i>
+                                            <div><strong>@Model.BatteryLevel.Value.ToString("F1")%</strong></div>
+                                            <small class="text-muted">Battery</small>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.Temperature.HasValue)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="text-center p-2 border rounded">
+                                            <i class="fas fa-thermometer-half fa-2x text-primary"></i>
+                                            <div><strong>@Model.Temperature.Value.ToString("F1")°C</strong></div>
+                                            <small class="text-muted">Temperature</small>
+                                        </div>
+                                    </div>
+                                }
+                                @if (Model.Humidity.HasValue)
+                                {
+                                    <div class="col-md-4">
+                                        <div class="text-center p-2 border rounded">
+                                            <i class="fas fa-tint fa-2x text-info"></i>
+                                            <div><strong>@Model.Humidity.Value.ToString("F1")%</strong></div>
+                                            <small class="text-muted">Humidity</small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- What will be deleted -->
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="fas fa-list"></i> What will be deleted?</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-danger">Device Data</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-times text-danger"></i> Device configuration and settings</li>
+                            <li><i class="fas fa-times text-danger"></i> All sensor data and readings</li>
+                            <li><i class="fas fa-times text-danger"></i> Device status and connectivity info</li>
+                            <li><i class="fas fa-times text-danger"></i> Technical specifications</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger">Associated Records</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-times text-danger"></i> All device activity logs</li>
+                            <li><i class="fas fa-times text-danger"></i> Historical events and actions</li>
+                            <li><i class="fas fa-times text-danger"></i> MQTT communication history</li>
+                            <li><i class="fas fa-times text-danger"></i> All related database entries</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> The device itself (physical hardware) will not be affected.
+                        Only the data in this management system will be removed.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Form -->
+<div class="row mt-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-check-circle"></i> Confirm Deletion</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Confirmation Checkbox -->
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmDelete" required>
+                        <label class="form-check-label" for="confirmDelete">
+                            <strong>I understand that this action cannot be undone and want to permanently delete this device.</strong>
+                        </label>
+                    </div>
+
+                    <!-- Type device name to confirm -->
+                    <div class="mb-3">
+                        <label for="confirmName" class="form-label">
+                            <strong>Type the device name "<span class="text-danger">@Model.Name</span>" to confirm deletion:</strong>
+                        </label>
+                        <input type="text" class="form-control" id="confirmName" placeholder="Enter device name here" required>
+                        <div class="invalid-feedback">
+                            Please type the exact device name to confirm deletion.
+                        </div>
+                    </div>
+
+                    <!-- Final warning -->
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Last Warning:</strong> This will permanently delete the device "@Model.Name" and all its data.
+                        This action cannot be reversed!
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="/Devices/Details/@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel - Keep Device
+                        </a>
+                        <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                            <i class="fas fa-trash"></i> Yes, Delete Device Permanently
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        $(document).ready(function() {
+            const deviceName = '@Model.Name';
+            const confirmCheckbox = $('#confirmDelete');
+            const confirmNameInput = $('#confirmName');
+            const deleteButton = $('#deleteButton');
+
+            function validateForm() {
+                const isChecked = confirmCheckbox.is(':checked');
+                const nameMatches = confirmNameInput.val().trim() === deviceName;
+
+                if (isChecked && nameMatches) {
+                    deleteButton.prop('disabled', false).removeClass('btn-secondary').addClass('btn-danger');
+                    confirmNameInput.removeClass('is-invalid').addClass('is-valid');
+                } else {
+                    deleteButton.prop('disabled', true).removeClass('btn-danger').addClass('btn-secondary');
+                    if (confirmNameInput.val().trim() !== '' && !nameMatches) {
+                        confirmNameInput.removeClass('is-valid').addClass('is-invalid');
+                    }
+                }
+            }
+
+            // Validate on checkbox change
+            confirmCheckbox.on('change', validateForm);
+
+            // Validate on name input
+            confirmNameInput.on('input', validateForm);
+
+            // Final confirmation before submit
+            $('form').on('submit', function(e) {
+                if (!confirm(`Are you absolutely sure you want to delete "${deviceName}"? This action CANNOT be undone!`)) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Show loading state
+                deleteButton.html('<i class="fas fa-spinner fa-spin"></i> Deleting...').prop('disabled', true);
+            });
+
+            // Prevent accidental navigation
+            window.addEventListener('beforeunload', function(e) {
+                if (confirmCheckbox.is(':checked') || confirmNameInput.val().trim() !== '') {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .card.border-danger {
+            border-color: #dc3545 !important;
+        }
+
+        .card.border-warning {
+            border-color: #ffc107 !important;
+        }
+
+        .form-check-input:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:disabled {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .is-valid {
+            border-color: #28a745;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
+        }
+    </style>
+}

@@ -1,0 +1,405 @@
+@model IoTAssesment.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Page Header -->
+<div class="mb-8">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">IoT Device Dashboard</h1>
+            <p class="text-gray-600">Monitor and manage your connected devices in real-time</p>
+        </div>
+        <div class="flex items-center space-x-2 text-sm text-gray-500">
+            <i class="fas fa-clock"></i>
+            <span>Last updated: <span id="last-updated">Just now</span></span>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Devices Card -->
+    <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 card-hover">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm font-medium">Total Devices</p>
+                    <p class="text-3xl font-bold text-white">@Model.TotalDevices</p>
+                </div>
+                <div class="relative">
+                    <div class="w-12 h-12 bg-blue-400/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-microchip text-xl text-white"></i>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-3 bg-blue-50">
+            <div class="flex items-center text-blue-700 text-sm">
+                <i class="fas fa-chart-line mr-2"></i>
+                <span>All registered devices</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Devices Card -->
+    <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 card-hover">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-emerald-100 text-sm font-medium">Online Devices</p>
+                    <p class="text-3xl font-bold text-white">@Model.OnlineDevices</p>
+                    <p class="text-emerald-200 text-xs">@Model.OnlinePercentage.ToString("F1")% of total</p>
+                </div>
+                <div class="relative">
+                    <div class="w-12 h-12 bg-emerald-400/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-wifi text-xl text-white"></i>
+                    </div>
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-300 rounded-full animate-ping"></div>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-3 bg-emerald-50">
+            <div class="flex items-center text-emerald-700 text-sm">
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>Connected and active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Devices Card -->
+    <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 card-hover">
+        <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-red-100 text-sm font-medium">Offline Devices</p>
+                    <p class="text-3xl font-bold text-white">@Model.OfflineDevices</p>
+                    <p class="text-red-200 text-xs">@Model.OfflinePercentage.ToString("F1")% of total</p>
+                </div>
+                <div class="relative">
+                    <div class="w-12 h-12 bg-red-400/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-3 bg-red-50">
+            <div class="flex items-center text-red-700 text-sm">
+                <i class="fas fa-times-circle mr-2"></i>
+                <span>Disconnected or inactive</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Battery Card -->
+    <div class="bg-white overflow-hidden shadow-lg rounded-xl border border-gray-100 card-hover">
+        <div class="bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-amber-100 text-sm font-medium">Low Battery</p>
+                    <p class="text-3xl font-bold text-white">@Model.LowBatteryCount</p>
+                    <p class="text-amber-200 text-xs">Devices below 25%</p>
+                </div>
+                <div class="relative">
+                    <div class="w-12 h-12 bg-amber-400/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-battery-quarter text-xl text-white"></i>
+                    </div>
+                    @if (Model.LowBatteryCount > 0)
+                    {
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-400 rounded-full animate-bounce"></div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-3 bg-amber-50">
+            <div class="flex items-center text-amber-700 text-sm">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span>Needs attention</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Devices and Activity Section -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+    <!-- Recent Devices -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 card-hover">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-microchip text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900">Recently Added Devices</h3>
+                </div>
+                <a href="/Devices"
+                   class="inline-flex items-center px-3 py-1.5 border border-blue-200 text-sm font-medium rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors duration-200">
+                    View All
+                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
+            </div>
+        </div>
+        <div class="px-6 py-4">
+            @if (Model.RecentDevices.Any())
+            {
+                <div class="space-y-3">
+                    @foreach (var device in Model.RecentDevices)
+                    {
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="relative">
+                                    @if (device.IsOnline)
+                                    {
+                                        <div class="w-3 h-3 bg-emerald-400 rounded-full status-indicator status-online"></div>
+                                    }
+                                    else
+                                    {
+                                        <div class="w-3 h-3 bg-red-400 rounded-full status-indicator status-offline"></div>
+                                    }
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">@device.Name</p>
+                                    <p class="text-sm text-gray-500">@device.DeviceType • @device.Location</p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @(device.IsOnline ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800")">
+                                @device.Status
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-8">
+                    <i class="fas fa-inbox text-3xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-500">No devices found</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 card-hover">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-activity text-orange-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                </div>
+                <a href="/Logs"
+                   class="inline-flex items-center px-3 py-1.5 border border-orange-200 text-sm font-medium rounded-lg text-orange-600 bg-orange-50 hover:bg-orange-100 transition-colors duration-200">
+                    View All
+                    <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                </a>
+            </div>
+        </div>
+        <div class="px-6 py-4">
+            @if (Model.RecentLogs.Any())
+            {
+                <div class="space-y-4">
+                    @foreach (var log in Model.RecentLogs)
+                    {
+                        <div class="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                            <div class="flex-shrink-0">
+                                @switch (log.Action)
+                                {
+                                    case "Created":
+                                        <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-plus text-emerald-600 text-xs"></i>
+                                        </div>
+                                        break;
+                                    case "Updated":
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-edit text-blue-600 text-xs"></i>
+                                        </div>
+                                        break;
+                                    case "Deleted":
+                                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-trash text-red-600 text-xs"></i>
+                                        </div>
+                                        break;
+                                    default:
+                                        <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-info text-gray-600 text-xs"></i>
+                                        </div>
+                                        break;
+                                }
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex justify-between items-start">
+                                    <p class="font-medium text-gray-900 truncate">@log.DeviceName</p>
+                                    <span class="text-xs text-gray-500 ml-2 flex-shrink-0">@log.TimeAgo</span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1">@log.Description</p>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 mt-2">
+                                    @log.Action
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-8">
+                    <i class="fas fa-clock text-3xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-500">No recent activity</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Device Type and Location Statistics -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <!-- Device Types Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 card-hover">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-layer-group text-purple-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Devices by Type</h3>
+            </div>
+        </div>
+        <div class="px-6 py-4">
+            @if (Model.DeviceTypeStats.Any())
+            {
+                <div class="space-y-3">
+                    @foreach (var stat in Model.DeviceTypeStats)
+                    {
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-purple-50 transition-colors duration-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-purple-400 rounded-full"></div>
+                                <span class="font-medium text-gray-900">@stat.Key</span>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
+                                @stat.Value
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-8">
+                    <i class="fas fa-layer-group text-3xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-500">No device type data available</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Device Locations Card -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 card-hover">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-map-marker-alt text-indigo-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Devices by Location</h3>
+            </div>
+        </div>
+        <div class="px-6 py-4">
+            @if (Model.LocationStats.Any())
+            {
+                <div class="space-y-3">
+                    @foreach (var stat in Model.LocationStats)
+                    {
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-indigo-50 transition-colors duration-200">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 bg-indigo-400 rounded-full"></div>
+                                <span class="font-medium text-gray-900">@stat.Key</span>
+                            </div>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
+                                @stat.Value
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-8">
+                    <i class="fas fa-map-marker-alt text-3xl text-gray-300 mb-3"></i>
+                    <p class="text-gray-500">No location data available</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Low Battery Alerts -->
+@if (Model.LowBatteryDevices.Any())
+{
+    <div class="mb-8">
+        <div class="bg-white rounded-xl shadow-lg border border-amber-200 card-hover overflow-hidden">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-amber-100/20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-2xl text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Low Battery Alerts</h3>
+                        <p class="text-amber-100 text-sm">Devices requiring immediate attention</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach (var device in Model.LowBatteryDevices)
+                    {
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 hover:bg-amber-100 transition-colors duration-200">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-900 mb-1">@device.Name</h4>
+                                    <p class="text-sm text-gray-600 mb-2">
+                                        <i class="fas fa-map-marker-alt text-gray-400 mr-1"></i>
+                                        @device.Location
+                                    </p>
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-battery-quarter text-red-500"></i>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">
+                                            @(device.BatteryLevel?.ToString("F1") ?? "Unknown")%
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row justify-center sm:justify-end items-center space-y-3 sm:space-y-0 sm:space-x-4 mb-8">
+    <a href="/Devices/Create"
+       class="group flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 min-w-[200px] justify-center">
+        <i class="fas fa-plus mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+        <span>Add New Device</span>
+    </a>
+    <a href="/Devices"
+       class="group flex items-center px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 bg-white hover:bg-gray-50 min-w-[200px] justify-center">
+        <i class="fas fa-list mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+        <span>Manage Devices</span>
+    </a>
+</div>
+
+@section Scripts {
+    <!-- Add FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+}

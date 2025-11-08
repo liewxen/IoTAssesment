@@ -1,0 +1,377 @@
+@{
+    ViewData["Title"] = "MQTT Simulator";
+}
+
+<!-- Header Section -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-satellite-dish text-purple-500 mr-3"></i>
+            MQTT Simulator
+        </h1>
+        <p class="text-gray-600 mt-2">Test MQTT messages without needing an actual broker</p>
+    </div>
+    <a href="@Url.Action("Index", "Devices")"
+       class="inline-flex items-center px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 bg-white hover:bg-gray-50">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Devices
+    </a>
+</div>
+
+<!-- Info Banner -->
+<div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
+    <div class="flex items-start">
+        <i class="fas fa-info-circle text-blue-500 text-xl mt-1 mr-3"></i>
+        <div>
+            <h3 class="font-semibold text-blue-900">Perfect for Demonstrations!</h3>
+            <p class="text-blue-800 text-sm mt-1">
+                This simulator processes MQTT messages using the same logic as the real MQTT service.
+                No broker setup required - ideal for testing and assessments.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Main Simulator Card -->
+<div class="max-w-6xl mx-auto">
+    <div class="bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-600 px-8 py-6">
+            <h2 class="text-2xl font-bold text-white flex items-center">
+                <i class="fas fa-paper-plane mr-3"></i>
+                Send Simulated MQTT Message
+            </h2>
+            <p class="text-purple-100 mt-1">Select a device, choose a topic, and send test data</p>
+        </div>
+
+        <div class="p-8">
+            <form id="mqttForm" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Left Column -->
+                    <div class="space-y-6">
+                        <!-- Device Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-microchip text-purple-500 mr-1"></i>
+                                Select Device <span class="text-red-500">*</span>
+                            </label>
+                            <select id="deviceSelect" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white transition-all duration-200">
+                                <option value="">-- Select a Device --</option>
+                                @foreach (var device in ViewBag.Devices)
+                                {
+                                    <option value="@device.Id" data-clientid="@device.ClientId" data-name="@device.Name">
+                                        @device.Name (@device.ClientId)
+                                    </option>
+                                }
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-lightbulb text-amber-400 mr-1"></i>
+                                The Client ID will be auto-filled from the selected device
+                            </p>
+                        </div>
+
+                        <!-- Topic Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-route text-purple-500 mr-1"></i>
+                                MQTT Topic <span class="text-red-500">*</span>
+                            </label>
+                            <select id="topicSelect" 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white transition-all duration-200">
+                                <option value="v1/telemetry">v1/telemetry - Send Sensor Data</option>
+                                <option value="v1/status">v1/status - Update Device Status</option>
+                                <option value="v1/heartbeat">v1/heartbeat - Send Heartbeat</option>
+                                <option value="v1/error">v1/error - Report Error</option>
+                            </select>
+                        </div>
+
+                        <!-- Quick Templates -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-magic text-purple-500 mr-1"></i>
+                                Quick Templates
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="loadTemplate('telemetry')" 
+                                        class="px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 text-sm font-medium rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-thermometer-half mr-1"></i>
+                                    Telemetry
+                                </button>
+                                <button type="button" onclick="loadTemplate('status')" 
+                                        class="px-3 py-2 bg-green-100 hover:bg-green-200 text-green-700 text-sm font-medium rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-power-off mr-1"></i>
+                                    Status
+                                </button>
+                                <button type="button" onclick="loadTemplate('heartbeat')" 
+                                        class="px-3 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 text-sm font-medium rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-heartbeat mr-1"></i>
+                                    Heartbeat
+                                </button>
+                                <button type="button" onclick="loadTemplate('error')" 
+                                        class="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-medium rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Error
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="space-y-6">
+                        <!-- JSON Payload -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-code text-purple-500 mr-1"></i>
+                                JSON Payload <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="payloadTextarea" 
+                                      rows="10"
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm resize-none transition-all duration-200"
+                                      placeholder='{"clientid":"YOUR_CLIENT_ID","temperature":25.0,"humidity":60.0,"battery_level":90.0}'></textarea>
+                            <div class="flex justify-between items-center mt-2">
+                                <p class="text-xs text-gray-500">
+                                    <i class="fas fa-info-circle text-blue-400 mr-1"></i>
+                                    Must be valid JSON with "clientid" field
+                                </p>
+                                <button type="button" onclick="formatJson()" 
+                                        class="text-xs text-purple-600 hover:text-purple-700 font-medium">
+                                    <i class="fas fa-align-left mr-1"></i>
+                                    Format JSON
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Send Button -->
+                        <button type="submit" 
+                                class="w-full flex items-center justify-center px-6 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Send Simulated Message
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Response Section -->
+    <div id="responseSection" class="hidden mt-6">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    Response
+                </h3>
+            </div>
+            <div id="responseContent" class="p-6">
+                <!-- Response will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        const templates = {
+            telemetry: {
+                topic: 'v1/telemetry',
+                payload: {
+                    clientid: 'DEVICE_CLIENT_ID',
+                    temperature: 25.5,
+                    humidity: 60.0,
+                    battery_level: 90.0,
+                    pressure: 1013.25,
+                    light_level: 450
+                }
+            },
+            status: {
+                topic: 'v1/status',
+                payload: {
+                    clientid: 'DEVICE_CLIENT_ID',
+                    status: 'online',
+                    timestamp: new Date().toISOString()
+                }
+            },
+            heartbeat: {
+                topic: 'v1/heartbeat',
+                payload: {
+                    clientid: 'DEVICE_CLIENT_ID',
+                    timestamp: new Date().toISOString()
+                }
+            },
+            error: {
+                topic: 'v1/error',
+                payload: {
+                    clientid: 'DEVICE_CLIENT_ID',
+                    message: 'Sensor malfunction detected',
+                    code: 'ERR_SENSOR_001',
+                    timestamp: new Date().toISOString()
+                }
+            }
+        };
+
+        // Auto-update client ID when device is selected
+        document.getElementById('deviceSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const clientId = selectedOption.getAttribute('data-clientid');
+            
+            if (clientId) {
+                // Update the payload with the selected client ID
+                try {
+                    const currentPayload = document.getElementById('payloadTextarea').value;
+                    if (currentPayload) {
+                        const payloadObj = JSON.parse(currentPayload);
+                        payloadObj.clientid = clientId;
+                        document.getElementById('payloadTextarea').value = JSON.stringify(payloadObj, null, 2);
+                    } else {
+                        // Load telemetry template if payload is empty
+                        loadTemplate('telemetry');
+                    }
+                } catch (e) {
+                    // If parsing fails, just load telemetry template
+                    loadTemplate('telemetry');
+                }
+            }
+        });
+
+        function loadTemplate(type) {
+            const template = templates[type];
+            const deviceSelect = document.getElementById('deviceSelect');
+            const selectedOption = deviceSelect.options[deviceSelect.selectedIndex];
+            const clientId = selectedOption.getAttribute('data-clientid') || 'DEVICE_CLIENT_ID';
+            
+            // Update payload with actual client ID
+            const payload = { ...template.payload, clientid: clientId };
+            
+            document.getElementById('topicSelect').value = template.topic;
+            document.getElementById('payloadTextarea').value = JSON.stringify(payload, null, 2);
+        }
+
+        function formatJson() {
+            try {
+                const payload = document.getElementById('payloadTextarea').value;
+                const formatted = JSON.stringify(JSON.parse(payload), null, 2);
+                document.getElementById('payloadTextarea').value = formatted;
+                showToast('JSON formatted successfully', 'success');
+            } catch (e) {
+                showToast('Invalid JSON: ' + e.message, 'error');
+            }
+        }
+
+        document.getElementById('mqttForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const deviceSelect = document.getElementById('deviceSelect');
+            if (!deviceSelect.value) {
+                showToast('Please select a device first', 'error');
+                return;
+            }
+
+            const topic = document.getElementById('topicSelect').value;
+            const payload = document.getElementById('payloadTextarea').value;
+
+            // Validate JSON
+            try {
+                JSON.parse(payload);
+            } catch (e) {
+                showToast('Invalid JSON payload: ' + e.message, 'error');
+                return;
+            }
+
+            showToast('Sending simulated MQTT message...', 'info');
+
+            try {
+                const response = await fetch('/MqttSimulator/SimulateMqtt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `topic=${encodeURIComponent(topic)}&payload=${encodeURIComponent(payload)}`
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    displayResponse(result, topic, payload);
+                } else {
+                    showToast(result.message || 'Failed to process message', 'error');
+                    displayResponse(result, topic, payload);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error sending message: ' + error.message, 'error');
+            }
+        });
+
+        function displayResponse(result, topic, payload) {
+            const responseSection = document.getElementById('responseSection');
+            const responseContent = document.getElementById('responseContent');
+
+            const statusColor = result.success ? 'green' : 'red';
+            const statusIcon = result.success ? 'check-circle' : 'times-circle';
+
+            responseContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2 text-lg font-semibold">
+                        <i class="fas fa-${statusIcon} text-${statusColor}-500"></i>
+                        <span class="text-${statusColor}-700">${result.success ? 'Success' : 'Failed'}</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Topic</label>
+                            <p class="text-gray-900 font-mono text-sm bg-gray-100 px-3 py-2 rounded">${topic}</p>
+                        </div>
+                        ${result.deviceId ? `
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Device</label>
+                            <p class="text-gray-900 font-semibold">${result.deviceName} (ID: ${result.deviceId})</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Message</label>
+                        <p class="text-gray-900">${result.message}</p>
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Payload Sent</label>
+                        <pre class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs overflow-x-auto font-mono">${payload}</pre>
+                    </div>
+
+                    ${result.success ? `
+                    <div class="flex gap-3">
+                        <a href="/Devices/Details/${result.deviceId}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200">
+                            <i class="fas fa-eye mr-2"></i>
+                            View Device Details
+                        </a>
+                        <a href="/Logs?deviceId=${result.deviceId}" 
+                           class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-colors duration-200">
+                            <i class="fas fa-history mr-2"></i>
+                            View Logs
+                        </a>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            responseSection.classList.remove('hidden');
+            responseSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Load telemetry template on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const deviceSelect = document.getElementById('deviceSelect');
+            if (deviceSelect.options.length > 1) {
+                // Auto-select first device if available
+                deviceSelect.selectedIndex = 1;
+                deviceSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    </script>
+}
+

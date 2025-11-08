@@ -1,0 +1,671 @@
+@model IoTAssesment.ViewModels.DeviceViewModel
+@{
+    ViewData["Title"] = $"Device Details - {Model.Name}";
+}
+
+<!-- Header Section -->
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 space-y-4 lg:space-y-0">
+    <div>
+        <div class="flex items-center space-x-3 mb-2">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-microchip text-2xl text-blue-600"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">@Model.Name</h1>
+                <p class="text-gray-600">@Model.DeviceType • @Model.Location</p>
+            </div>
+        </div>
+        @if (Model.IsOnline)
+        {
+            <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                    @Model.Status
+                </span>
+                <span class="text-gray-500">•</span>
+                <span class="text-sm text-gray-600">@Model.ConnectionQuality connection</span>
+            </div>
+        }
+        else
+        {
+            <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                    @Model.Status
+                </span>
+                <span class="text-gray-500">•</span>
+                <span class="text-sm text-gray-600">Last seen @Model.LastSeen.ToString("MMM dd, HH:mm")</span>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    <!-- Left Column: Device Information -->
+    <div class="xl:col-span-2 space-y-6">
+
+        <!-- Basic Information Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    Basic Information
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Device Name</label>
+                        <p class="text-base font-semibold text-gray-900">@Model.Name</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Device Type</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            @Model.DeviceType
+                        </span>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Location</label>
+                        <p class="text-base text-gray-900 flex items-center">
+                            <i class="fas fa-map-marker-alt text-indigo-500 mr-1"></i>
+                            @Model.Location
+                        </p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Description</label>
+                        <p class="text-base text-gray-900">@(Model.Description ?? "No description available")</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Serial Number</label>
+                        <p class="text-base font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">@(Model.SerialNumber ?? "N/A")</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Firmware Version</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            @(Model.FirmwareVersion ?? "Unknown")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Data Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-thermometer-half text-green-500 mr-2"></i>
+                    Sensor Data
+                </h3>
+            </div>
+            <div class="p-6 space-y-6">
+                <!-- Battery Level -->
+                @if (Model.BatteryLevel.HasValue)
+                {
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700 flex items-center">
+                                <i class="fas fa-battery-half text-gray-500 mr-1"></i>
+                                Battery Level
+                            </label>
+                            <span class="text-lg font-bold text-gray-900">@Model.BatteryLevel.Value.ToString("F1")%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="@(Model.BatteryLevel > 75 ? "bg-green-500" : Model.BatteryLevel > 50 ? "bg-yellow-500" : Model.BatteryLevel > 25 ? "bg-orange-500" : "bg-red-500")
+                                     h-3 rounded-full transition-all duration-300"
+                                 style="width: @(Model.BatteryLevel)%">
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">Status: @Model.BatteryStatus</p>
+                    </div>
+                }
+
+                <!-- Temperature -->
+                @if (Model.Temperature.HasValue)
+                {
+                    <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-thermometer-half text-blue-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Temperature</span>
+                        </div>
+                        <span class="text-2xl font-bold text-blue-600">
+                            @Model.Temperature.Value.ToString("F1")°C
+                        </span>
+                    </div>
+                }
+
+                <!-- Humidity -->
+                @if (Model.Humidity.HasValue)
+                {
+                    <div class="flex items-center justify-between p-4 bg-cyan-50 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-tint text-cyan-600"></i>
+                            </div>
+                            <span class="font-medium text-gray-700">Humidity</span>
+                        </div>
+                        <span class="text-2xl font-bold text-cyan-600">
+                            @Model.Humidity.Value.ToString("F1")%
+                        </span>
+                    </div>
+                }
+
+                @if (!Model.BatteryLevel.HasValue && !Model.Temperature.HasValue && !Model.Humidity.HasValue)
+                {
+                    <div class="text-center py-8">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-thermometer-half text-2xl text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-600 mb-4">No sensor data available yet. Send telemetry data via MQTT to see sensor readings.</p>
+                        <button type="button"
+                                onclick="requestSensorData(@Model.Id)"
+                                class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg transition-colors duration-200">
+                            <i class="fas fa-sync mr-2"></i>
+                            Check for New Data
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Status & Actions -->
+    <div class="space-y-6">
+        <!-- Device Status Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="@(Model.IsOnline ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-gradient-to-r from-red-500 to-red-600") px-6 py-4">
+                <h3 class="text-lg font-semibold text-white flex items-center">
+                    <i class="fas @(Model.IsOnline ? "fa-wifi" : "fa-exclamation-triangle") mr-2"></i>
+                    Device Status
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Current Status</label>
+                        <div class="flex items-center space-x-2 mt-1">
+                            @if (Model.IsOnline)
+                            {
+                                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                                <span class="font-semibold text-green-800">Online</span>
+                            }
+                            else
+                            {
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <span class="font-semibold text-red-800">Offline</span>
+                            }
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Connection Quality</label>
+                        <p class="mt-1">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                @(Model.ConnectionQuality switch
+                                {
+                                    "Excellent" => "bg-green-100 text-green-800",
+                                    "Good" => "bg-blue-100 text-blue-800",
+                                    "Fair" => "bg-yellow-100 text-yellow-800",
+                                    "Poor" => "bg-red-100 text-red-800",
+                                    _ => "bg-gray-100 text-gray-800"
+                                })">
+                                @Model.ConnectionQuality
+                            </span>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Last Seen</label>
+                        <p class="text-base text-gray-900 mt-1">@Model.LastSeen.ToString("yyyy-MM-dd HH:mm:ss") UTC</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MQTT Connection Info -->
+        @if (!string.IsNullOrEmpty(Model.ClientId))
+        {
+            <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-wifi text-indigo-500 mr-2"></i>
+                        MQTT Connection
+                    </h3>
+                </div>
+                <div class="p-6 space-y-3">
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Client ID</label>
+                        <p class="text-base font-mono bg-gray-100 px-2 py-1 rounded text-gray-900">@Model.ClientId</p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.MqttUsername))
+                    {
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Username</label>
+                            <p class="text-base text-gray-900">@Model.MqttUsername</p>
+                        </div>
+                    }
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Connection Status</label>
+                        <p class="text-base text-gray-900">@Model.ConnectionStatus</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Timestamps -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-gray-50 to-slate-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-clock text-gray-500 mr-2"></i>
+                    Timestamps
+                </h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <div>
+                    <label class="text-sm font-medium text-gray-500">Created</label>
+                    <p class="text-base text-gray-900">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                </div>
+                <div>
+                    <label class="text-sm font-medium text-gray-500">Last Updated</label>
+                    <p class="text-base text-gray-900">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm:ss")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Timeline & Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+    <!-- Device Timeline -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-clock text-gray-500 mr-2"></i>
+                Device Timeline
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-6">
+                <!-- Timeline Items -->
+                <div class="relative">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-plus text-blue-600"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-medium text-gray-900">Device Created</h4>
+                                <time class="text-xs text-gray-500">@Model.CreatedAt.ToString("MMM dd, yyyy")</time>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">@Model.CreatedAt.ToString("HH:mm:ss UTC")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute left-5 top-0 bottom-0 w-px bg-gray-200"></div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-edit text-amber-600"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-medium text-gray-900">Last Updated</h4>
+                                <time class="text-xs text-gray-500">@Model.UpdatedAt.ToString("MMM dd, yyyy")</time>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">@Model.UpdatedAt.ToString("HH:mm:ss UTC")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute left-5 top-0 bottom-0 w-px bg-gray-200"></div>
+                    <div class="flex items-start space-x-4">
+                        <div class="w-10 h-10 @(Model.IsOnline ? "bg-green-100" : "bg-red-100") rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas @(Model.IsOnline ? "fa-wifi" : "fa-exclamation-triangle") @(Model.IsOnline ? "text-green-600" : "text-red-600")"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-medium text-gray-900">Last Activity</h4>
+                                <time class="text-xs text-gray-500">@Model.LastSeen.ToString("MMM dd, yyyy")</time>
+                            </div>
+                            <p class="text-sm @(Model.IsOnline ? "text-green-600" : "text-red-600") mt-1">
+                                @Model.LastSeen.ToString("HH:mm:ss UTC") • @Model.Status
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-cogs text-blue-500 mr-2"></i>
+                Quick Actions
+            </h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <button type="button"
+                    onclick="requestSensorData(@Model.Id)"
+                    class="w-full flex items-center justify-center px-4 py-3 border-2 border-blue-300 hover:border-blue-400 text-blue-700 hover:text-blue-800 font-medium rounded-lg transition-all duration-200 bg-blue-50 hover:bg-blue-100">
+                <i class="fas fa-sync mr-3"></i>
+                Refresh Sensor Data
+            </button>
+
+            <button type="button"
+                    onclick="toggleDeviceStatus(@Model.Id)"
+                    class="w-full flex items-center justify-center px-4 py-3 border-2 border-amber-300 hover:border-amber-400 text-amber-700 hover:text-amber-800 font-medium rounded-lg transition-all duration-200 bg-amber-50 hover:bg-amber-100">
+                <i class="fas fa-power-off mr-3"></i>
+                @(Model.IsOnline ? "Set Offline" : "Set Online")
+            </button>
+
+            <a href="/Logs?deviceId=@Model.Id"
+               class="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium rounded-lg transition-all duration-200 bg-gray-50 hover:bg-gray-100">
+                <i class="fas fa-history mr-3"></i>
+                View Device Logs
+            </a>
+
+            <a href="/Devices/Edit/@Model.Id"
+               class="w-full flex items-center justify-center px-4 py-3 border-2 border-purple-300 hover:border-purple-400 text-purple-700 hover:text-purple-800 font-medium rounded-lg transition-all duration-200 bg-purple-50 hover:bg-purple-100">
+                <i class="fas fa-edit mr-3"></i>
+                Edit Device Settings
+            </a>
+        </div>
+    </div>
+
+    <!-- MQTT Test Commands -->
+    @if (!string.IsNullOrEmpty(Model.ClientId))
+    {
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-terminal text-green-500 mr-2"></i>
+                    MQTT Test Commands
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-sm text-gray-600 mb-4">
+                    <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                    Use these commands to test MQTT communication with this device
+                </p>
+
+                <!-- Telemetry Command -->
+                <div>
+                    <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 block">Send Telemetry Data</label>
+                    <div class="relative">
+                        <pre class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs overflow-x-auto font-mono" id="telemetryCmd">mosquitto_pub -h localhost -t "v1/telemetry" -m '{"clientid":"@Model.ClientId","temperature":25.0,"humidity":60.0,"battery_level":90.0}'</pre>
+                        <button onclick="copyToClipboard('telemetryCmd')" 
+                                class="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors duration-200">
+                            <i class="fas fa-copy mr-1"></i>Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Status Command -->
+                <div>
+                    <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 block">Send Status Update</label>
+                    <div class="relative">
+                        <pre class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs overflow-x-auto font-mono" id="statusCmd">mosquitto_pub -h localhost -t "v1/status" -m '{"clientid":"@Model.ClientId","status":"online","timestamp":"@DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")"}'</pre>
+                        <button onclick="copyToClipboard('statusCmd')" 
+                                class="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors duration-200">
+                            <i class="fas fa-copy mr-1"></i>Copy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Heartbeat Command -->
+                <div>
+                    <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2 block">Send Heartbeat</label>
+                    <div class="relative">
+                        <pre class="bg-gray-900 text-green-400 p-3 rounded-lg text-xs overflow-x-auto font-mono" id="heartbeatCmd">mosquitto_pub -h localhost -t "v1/heartbeat" -m '{"clientid":"@Model.ClientId","timestamp":"@DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")"}'</pre>
+                        <button onclick="copyToClipboard('heartbeatCmd')" 
+                                class="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-xs rounded transition-colors duration-200">
+                            <i class="fas fa-copy mr-1"></i>Copy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p class="text-xs text-amber-800">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <strong>Note:</strong> Ensure Mosquitto MQTT broker is running on localhost:1883
+                    </p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+        
+<!-- Recent Activity Timeline -->
+@if (ViewBag.DeviceLogs != null && ((List<IoTAssesment.ViewModels.DeviceLogViewModel>)ViewBag.DeviceLogs).Any())
+{
+    <div class="mt-8">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <i class="fas fa-history text-indigo-500 mr-2"></i>
+                        Recent Activity
+                    </h3>
+                    <a href="@Url.Action("Index", "Logs", new { deviceId = Model.Id })"
+                       class="inline-flex items-center px-3 py-1 text-sm font-medium text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-50 border border-indigo-200 hover:border-indigo-300 rounded-lg transition-all duration-200">
+                        View All Logs
+                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="flow-root">
+                    <ul class="-mb-8">
+                        @{
+                            var logs = (List<IoTAssesment.ViewModels.DeviceLogViewModel>)ViewBag.DeviceLogs;
+                            var logCount = logs.Count;
+                        }
+                        @for (int i = 0; i < logCount; i++)
+                        {
+                            var log = logs[i];
+                            var isLast = i == logCount - 1;
+                            
+                            // Determine icon and color based on action
+                            var iconConfig = log.Action.ToLower() switch
+                            {
+                                "created" => new { Icon = "fa-plus", BgColor = "bg-green-100", TextColor = "text-green-600", BorderColor = "border-green-200" },
+                                "updated" => new { Icon = "fa-edit", BgColor = "bg-blue-100", TextColor = "text-blue-600", BorderColor = "border-blue-200" },
+                                "deleted" => new { Icon = "fa-trash", BgColor = "bg-red-100", TextColor = "text-red-600", BorderColor = "border-red-200" },
+                                "statusupdate" => new { Icon = "fa-toggle-on", BgColor = "bg-purple-100", TextColor = "text-purple-600", BorderColor = "border-purple-200" },
+                                "firmwareupdate" => new { Icon = "fa-download", BgColor = "bg-indigo-100", TextColor = "text-indigo-600", BorderColor = "border-indigo-200" },
+                                "togglestatus" => new { Icon = "fa-power-off", BgColor = "bg-amber-100", TextColor = "text-amber-600", BorderColor = "border-amber-200" },
+                                _ => new { Icon = "fa-circle", BgColor = "bg-gray-100", TextColor = "text-gray-600", BorderColor = "border-gray-200" }
+                            };
+                            
+                            <li class="relative pb-8">
+                                @if (!isLast)
+                                {
+                                    <span class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                }
+                                <div class="relative flex items-start space-x-3">
+                                    <div class="relative">
+                                        <div class="h-10 w-10 rounded-full @iconConfig.BgColor border-2 @iconConfig.BorderColor flex items-center justify-center ring-4 ring-white">
+                                            <i class="fas @iconConfig.Icon @iconConfig.TextColor text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-1">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @log.ActionBadgeClass mr-2">
+                                                    @log.Action
+                                                </span>
+                                                <span class="text-sm font-medium text-gray-900">@log.Description</span>
+                                            </div>
+                                            <div class="text-right whitespace-nowrap ml-4">
+                                                <time class="text-xs text-gray-500">@log.TimeAgo</time>
+                                            </div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(log.Status))
+                                        {
+                                            <div class="mt-2">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @log.StatusBadgeClass">
+                                                    @log.Status
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="mt-8">
+        <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-history text-indigo-500 mr-2"></i>
+                    Recent Activity
+                </h3>
+            </div>
+            <div class="p-8 text-center">
+                <i class="fas fa-clock text-gray-300 text-5xl mb-4"></i>
+                <h4 class="text-lg font-medium text-gray-900 mb-2">No Activity Yet</h4>
+                <p class="text-gray-500">Activity logs for this device will appear here.</p>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Navigation -->
+<div class="mt-8 pt-8 border-t border-gray-200">
+    <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+        <a href="@Url.Action("Index")" 
+           class="inline-flex items-center px-6 py-3 border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 font-medium rounded-lg transition-all duration-200 bg-white hover:bg-gray-50 shadow-sm hover:shadow-md">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Device List
+        </a>
+        <div class="flex flex-wrap gap-3">
+            <a href="@Url.Action("Edit", new { id = Model.Id })" 
+               class="inline-flex items-center px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                <i class="fas fa-edit mr-2"></i>
+                Edit Device
+            </a>
+            <a href="@Url.Action("Delete", new { id = Model.Id })" 
+               class="inline-flex items-center px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg">
+                <i class="fas fa-trash mr-2"></i>
+                Delete Device
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        function toggleDeviceStatus(deviceId) {
+            if (confirm('Are you sure you want to toggle the status of this device?')) {
+                fetch(`/api/devices/${deviceId}/toggle-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message || 'Device status toggled successfully', 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast(data.message || 'Failed to toggle device status', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error occurred while toggling device status', 'error');
+                });
+            }
+        }
+
+        function requestSensorData(deviceId) {
+            showToast('Fetching latest sensor data...', 'info');
+            
+            fetch(`/api/devices/${deviceId}/request-sensor-data`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || 'Latest sensor data retrieved', 'success');
+                    // Reload the page to show updated data
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showToast(data.message || 'Failed to fetch sensor data', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error occurred while fetching sensor data', 'error');
+            });
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Command copied to clipboard!', 'success');
+            }).catch(err => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Command copied to clipboard!', 'success');
+                } catch (err) {
+                    showToast('Failed to copy command', 'error');
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+
+        // Auto-refresh every 30 seconds to show real-time updates
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+
+    <style>
+        .timeline-item {
+            border-left: 2px solid #dee2e6;
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+        }
+
+        .timeline-item:last-child {
+            border-left: none;
+        }
+
+        .card.border-success {
+            border-color: #28a745 !important;
+        }
+
+        .card.border-danger {
+            border-color: #dc3545 !important;
+        }
+    </style>
+}

@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: iot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: IoTDeviceManagement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - iot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Eclipse Mosquitto MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: iot-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - iot-network
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # IoT Assessment Application
+  iot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iot-app
+    restart: unless-stopped
+    ports:
+      - "5212:8080"
+    environment:
+      # Database Configuration
+      ConnectionStrings__DefaultConnection: "Host=postgres;Database=IoTDeviceManagement;Username=postgres;Password=postgres"
+      
+      # MQTT Configuration
+      MQTT__BrokerHost: mosquitto
+      MQTT__BrokerPort: 1883
+      MQTT__ClientId: IoTDeviceManager
+      MQTT__Username: ""
+      MQTT__Password: ""
+      
+      # Telemetry Configuration
+      Telemetry__Partitioning__Enabled: "true"
+      Telemetry__Partitioning__Type: Monthly
+      Telemetry__Partitioning__RetentionDays: 365
+      Telemetry__Partitioning__AutoCreatePartitions: "true"
+      
+      # ASP.NET Core Configuration
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      
+      # Logging
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - iot-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  iot-network:
+    driver: bridge
+    name: iot-network
+
+volumes:
+  postgres_data:
+    driver: local
+    name: iot-postgres-data
+

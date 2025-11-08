@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet restore)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet build)",
+      "Bash(dotnet ef:*)",
+      "Bash(dotnet run)",
+      "Bash(curl -X POST http://localhost:5212/api/devices ^)",
+      "Bash(powershell:*)",
+      "Bash(taskkill:*)",
+      "Bash(dotnet build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
