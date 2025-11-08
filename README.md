@@ -33,11 +33,25 @@ This application follows a layered architecture pattern:
 - Connection status and last seen timestamp
 
 ### 📱 User Interface
-- Bootstrap-based responsive design
+- Modern Tailwind CSS design
 - Real-time status updates
 - Interactive device management
 - Dashboard with statistics
 - Activity logs with filtering
+- Toast notifications
+- Responsive layout
+
+## 📸 Screenshots & Features
+
+Want to see what the application looks like? Check out our **[Visual Feature Showcase](FEATURE_SHOWCASE.md)** with screenshots of:
+
+- 📊 **Dashboard** - System overview with statistics
+- 🔧 **Device Management** - Browse, create, edit devices
+- 📱 **Device Details** - Complete device information and sensor data
+- 📜 **Activity Logs** - Filter and monitor all system events
+- 🛰️ **MQTT Simulator** - Test MQTT without a physical broker
+
+[**→ View Feature Showcase with Screenshots**](FEATURE_SHOWCASE.md)
 
 ## 🛠️ Technology Stack
 

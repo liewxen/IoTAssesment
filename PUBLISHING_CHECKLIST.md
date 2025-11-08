@@ -23,10 +23,22 @@
 - ✅ `README.md`
 - ✅ `USER_GUIDE.md`
 - ✅ `DOCKER_SETUP_GUIDE.md`
+- ✅ `FEATURE_SHOWCASE.md`
 - ✅ `MQTT_SIMULATOR_GUIDE.md`
 - ✅ `MQTTX_SETUP_GUIDE.md`
 - ✅ `MOSQUITTO_SETUP_GUIDE.md`
+- ✅ `QUICKSTART.md`
 - ✅ `LICENSE` (if applicable)
+
+### Screenshots
+- ✅ `images/dashboard.png`
+- ✅ `images/devices.png`
+- ✅ `images/devicesCreate.png`
+- ✅ `images/devicesEdit.png`
+- ✅ `images/devicesDetails.png`
+- ✅ `images/devicesDetails2.png`
+- ✅ `images/activityLogs.png`
+- ✅ `images/mqttSimulation.png`
 
 ### Configuration
 - ✅ `.gitignore`
@@ -150,11 +162,14 @@ If this is for assessment submission, ask if they prefer:
 
 ### Add a Professional Touch:
 
-1. **Screenshots in README**
-   - Dashboard view
-   - Device management
-   - MQTT Simulator
-   - Activity logs
+1. **Screenshots in README** ✅ DONE!
+   - ✅ Dashboard view - Included
+   - ✅ Device management - Included
+   - ✅ MQTT Simulator - Included
+   - ✅ Activity logs - Included
+   - ✅ Device creation/editing - Included
+   - ✅ Device details - Included
+   - ✅ **FEATURE_SHOWCASE.md** created with all screenshots!
 
 2. **Demo GIF** (optional)
    - Record a quick walkthrough

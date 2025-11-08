@@ -4,12 +4,144 @@ Welcome to the IoT Device Management System! This guide will help you understand
 
 ## 📋 Table of Contents
 
-1. [Getting Started](#getting-started)
-2. [Device Management (CRUD Operations)](#device-management-crud-operations)
-3. [MQTT Communication](#mqtt-communication)
-4. [Telemetry Data Management](#telemetry-data-management)
-5. [Dashboard & Monitoring](#dashboard--monitoring)
-6. [Troubleshooting](#troubleshooting)
+1. [How to Run the Project](#how-to-run-the-project)
+2. [Getting Started](#getting-started)
+3. [Device Management (CRUD Operations)](#device-management-crud-operations)
+4. [MQTT Communication](#mqtt-communication)
+5. [Telemetry Data Management](#telemetry-data-management)
+6. [Dashboard & Monitoring](#dashboard--monitoring)
+7. [Troubleshooting](#troubleshooting)
+
+---
+
+## 🐳 How to Run the Project
+
+### Prerequisites
+
+- **Docker Desktop** installed on your machine
+  - Download from: https://www.docker.com/products/docker-desktop
+  - Make sure Docker Desktop is **running** before proceeding
+
+### Quick Start (3 Steps)
+
+#### Step 1: Download/Clone the Project
+
+```bash
+# If using Git
+git clone <repository-url>
+cd IoTAssessment
+
+# Or extract the downloaded ZIP file
+# Navigate to the extracted folder
+```
+
+#### Step 2: Configure Settings (Optional)
+
+Open `docker-compose.yml` and customize if needed:
+
+```yaml
+# Default configuration (works out of the box):
+postgres:
+  environment:
+    POSTGRES_PASSWORD: postgres  # Change if desired
+
+iot-app:
+  environment:
+    # Database connection
+    ConnectionStrings__DefaultConnection: "Host=postgres;Database=IoTDeviceManagement;Username=postgres;Password=postgres"
+    
+    # MQTT settings
+    MQTT__BrokerHost: mosquitto
+    MQTT__BrokerPort: 1883
+```
+
+**Note:** The default settings work perfectly for local development. You only need to change them if you want custom passwords or configurations.
+
+#### Step 3: Run Docker Compose
+
+Open **PowerShell** or **Terminal** in the project directory:
+
+```powershell
+# Windows PowerShell - Easy setup script
+.\setup-docker.ps1
+
+# Or manually start all services
+docker-compose up -d
+```
+
+```bash
+# Linux/Mac - Easy setup script
+chmod +x setup-docker.sh
+./setup-docker.sh
+
+# Or manually start all services
+docker-compose up -d
+```
+
+**That's it!** Wait 30-60 seconds for all services to start.
+
+### Verify Everything is Running
+
+```powershell
+# Check container status
+docker-compose ps
+
+# You should see:
+# - iot-app       (healthy)
+# - iot-postgres  (healthy)
+# - iot-mosquitto (healthy)
+```
+
+### Access the Application
+
+Open your browser and go to: **http://localhost:5212**
+
+🎉 **Your IoT Device Management System is now running!**
+
+### What's Running?
+
+| Service | Description | URL/Port |
+|---------|-------------|----------|
+| **Web Application** | ASP.NET Core app | http://localhost:5212 |
+| **PostgreSQL Database** | Stores devices, telemetry, logs | localhost:5432 |
+| **Mosquitto MQTT Broker** | Handles device communication | localhost:1883 |
+
+### Useful Commands
+
+```powershell
+# View logs
+docker-compose logs -f
+
+# Stop all services
+docker-compose stop
+
+# Start services again
+docker-compose start
+
+# Stop and remove everything
+docker-compose down
+
+# Stop and remove everything INCLUDING data
+docker-compose down -v
+```
+
+### Troubleshooting Docker Setup
+
+**Problem: "Cannot connect to Docker daemon"**
+- Solution: Make sure Docker Desktop is running
+
+**Problem: "Port already in use"**
+- Solution: Change the port in `docker-compose.yml`:
+  ```yaml
+  ports:
+    - "5213:8080"  # Changed from 5212 to 5213
+  ```
+
+**Problem: Services not starting**
+- Solution: Check logs: `docker-compose logs iot-app`
+- Solution: Restart: `docker-compose restart`
+
+For more detailed Docker instructions, see [DOCKER_SETUP_GUIDE.md](DOCKER_SETUP_GUIDE.md)
 
 ---
 
